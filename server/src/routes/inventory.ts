@@ -39,7 +39,7 @@ router.post('/', authenticateToken, authorizeRole(['ADMIN']), async (req, res) =
 // Update item (restock/adjust)
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { quantity } = req.body;
     const item = await prisma.inventoryItem.update({
       where: { id },

@@ -30,7 +30,7 @@ router.post('/', authenticateToken, authorizeRole(['ADMIN']), async (req, res) =
 // Update equipment
 router.put('/:id', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { name, type, location, status } = req.body;
     const equipment = await prisma.equipment.update({
       where: { id },
@@ -45,7 +45,7 @@ router.put('/:id', authenticateToken, authorizeRole(['ADMIN']), async (req, res)
 // Delete equipment
 router.delete('/:id', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await prisma.equipment.delete({ where: { id } });
     res.json({ message: 'Equipment deleted' });
   } catch (error) {

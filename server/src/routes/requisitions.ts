@@ -41,7 +41,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res) => {
 // Update status
 router.put('/:id', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { status } = req.body;
     const requisition = await prisma.requisition.update({
       where: { id },

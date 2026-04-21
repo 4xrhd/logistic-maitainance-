@@ -41,7 +41,7 @@ router.post('/', authenticateToken, async (req, res) => {
 // Update status
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { status, remarks } = req.body;
     const request = await prisma.maintenanceRequest.update({
       where: { id },
@@ -56,7 +56,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 // Delete request
 router.delete('/:id', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await prisma.maintenanceRequest.delete({ where: { id } });
     res.json({ message: 'Request deleted' });
   } catch (error) {
