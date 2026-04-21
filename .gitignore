@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+server/node_modules
+
+# Build outputs
+dist
+server/dist
+build
+/out
+
+# Environment variables
+.env
+.env.*
+server/.env
+server/.env.*
+
+# Database
+server/dev.db
+server/dev.db-journal
+
+# IDE and OS files
+.DS_Store
+.vscode
+.idea
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite and development
+.vite
+.next
+
+# Prisma generated files
+/src/generated/prisma
