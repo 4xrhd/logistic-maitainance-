@@ -10,7 +10,10 @@ import {
   Boxes,
   Truck,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  MapPin,
+  CheckCircle2,
+  PackageSearch
 } from "lucide-react";
 import { Link } from "react-router";
 import {
@@ -42,23 +45,51 @@ interface DashboardStats {
   requisitions: number;
 }
 
+interface Equipment {
+  id: string;
+  name: string;
+  type: string;
+  location: string;
+  status: string;
+  lastMaintenance: string | null;
+  nextMaintenance: string | null;
+}
+
+interface InventoryItem {
+  id: string;
+  name: string;
+  category: string;
+  quantity: number;
+  unit: string;
+  minStock: number;
+  location: string;
+}
+
 export function Dashboard() {
   const { token } = useAuth();
   const [apiStats, setApiStats] = useState<DashboardStats | null>(null);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const data = await api.get<DashboardStats>('/dashboard/stats', token!);
-        setApiStats(data);
+        const [statsData, equipmentData, inventoryData] = await Promise.all([
+          api.get<DashboardStats>('/dashboard/stats', token!),
+          api.get<Equipment[]>('/equipment', token!),
+          api.get<InventoryItem[]>('/inventory', token!)
+        ]);
+        setApiStats(statsData);
+        setEquipment(equipmentData);
+        setInventory(inventoryData);
       } catch (error) {
-        console.error("DEBUG: [fetchStats] Failed to fetch dashboard stats", error);
+        console.error("DEBUG: [fetchData] Failed to sync dashboard data", error);
       } finally {
         setIsLoading(false);
       }
     };
-    if (token) fetchStats();
+    if (token) fetchData();
   }, [token]);
 
   // FIX: Clean data for Pie Chart to avoid overlap and rendering issues
@@ -362,6 +393,137 @@ export function Dashboard() {
                   </div>
                 )}
               </div>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="fleet" className="animate-in slide-in-from-right-4 duration-500">
+          <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden">
+            <div className="p-6 border-b border-slate-50 flex items-center justify-between">
+              <div>
+                <h2 className="font-bold text-slate-800">Fleet Performance Detail</h2>
+                <p className="text-xs text-slate-500 mt-1">Real-time status of all registered assets</p>
+              </div>
+              <Link to="/equipment" className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">Manage Full Fleet</Link>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-slate-50/50">
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Asset</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Location</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Next Service</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {equipment.slice(0, 8).map((eq) => (
+                    <tr key={eq.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-slate-100 text-slate-500 rounded-lg">
+                            <Truck className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="block text-sm font-bold text-slate-800">{eq.name}</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase">{eq.id}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                          eq.status === 'Operational' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                          eq.status === 'Under Maintenance' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                          'bg-rose-50 text-rose-700 border-rose-100'
+                        }`}>
+                          <div className={`w-1.5 h-1.5 rounded-full ${
+                             eq.status === 'Operational' ? 'bg-emerald-500' :
+                             eq.status === 'Under Maintenance' ? 'bg-amber-500' : 'bg-rose-500'
+                          }`} />
+                          {eq.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 font-medium text-slate-600 text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <MapPin className="w-3 h-3 text-slate-400" />
+                          {eq.location}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-xs font-bold text-slate-500">
+                        {eq.nextMaintenance ? new Date(eq.nextMaintenance).toLocaleDateString() : 'TBD'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="inventory" className="animate-in slide-in-from-right-4 duration-500">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2 border-none shadow-sm bg-white rounded-2xl overflow-hidden">
+              <div className="p-6 border-b border-slate-50">
+                <h2 className="font-bold text-slate-800">Critical Stock Levels</h2>
+                <p className="text-xs text-slate-500 mt-1">Items requiring immediate attention or reorder</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-slate-50/50">
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Part/Item</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">In Stock</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {inventory.filter(item => item.quantity <= item.minStock).map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-6 py-4 text-sm font-bold text-slate-800">{item.name}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-slate-600">{item.quantity} {item.unit}</td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-50 text-rose-700 text-[10px] font-bold uppercase tracking-tighter border border-rose-100">
+                            Low Stock
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {inventory.filter(item => item.quantity <= item.minStock).length === 0 && (
+                      <tr>
+                        <td colSpan={3} className="px-6 py-12 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+                            <p className="text-sm font-bold text-slate-500">All inventory levels are healthy</p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+
+            <Card className="p-6 border-none shadow-sm bg-blue-600 text-white flex flex-col justify-between overflow-hidden relative">
+              <div className="relative z-10">
+                <h2 className="font-bold text-xl mb-2">Inventory Sync</h2>
+                <p className="text-blue-100 text-sm">Managing {inventory.length} total SKU lines across 4 warehouses.</p>
+                
+                <div className="mt-8 space-y-4">
+                  <div className="bg-blue-500/30 p-4 rounded-xl border border-white/10">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-blue-200">Reorder Volume</p>
+                    <p className="text-2xl font-bold mt-1">{inventory.filter(i => i.quantity <= i.minStock).length}</p>
+                    <p className="text-[10px] text-blue-100">Items below threshold</p>
+                  </div>
+                  
+                  <Link to="/inventory" className="flex items-center justify-between w-full p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all border border-white/5 group">
+                    <span className="font-bold text-sm">Inventory Dashboard</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+              
+              {/* Background Decoration */}
+              <PackageSearch className="absolute -bottom-8 -right-8 w-48 h-48 opacity-10 rotate-12" />
             </Card>
           </div>
         </TabsContent>

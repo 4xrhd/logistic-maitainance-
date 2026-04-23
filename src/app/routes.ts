@@ -5,6 +5,7 @@ import { MaintenanceList } from "./components/MaintenanceList";
 import { RequisitionList } from "./components/RequisitionList";
 import { EquipmentList } from "./components/EquipmentList";
 import { InventoryList } from "./components/InventoryList";
+import { UserManagement } from "./components/UserManagement";
 
 export const router = createBrowserRouter([
   {
@@ -16,6 +17,7 @@ export const router = createBrowserRouter([
       { path: "requisitions", Component: RequisitionList },
       { path: "equipment", Component: EquipmentList },
       { path: "inventory", Component: InventoryList },
+      { path: "users", Component: UserManagement },
     ],
   },
 ]);

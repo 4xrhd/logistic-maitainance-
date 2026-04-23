@@ -9,6 +9,7 @@ import maintenanceRoutes from './routes/maintenance';
 import requisitionRoutes from './routes/requisitions';
 import inventoryRoutes from './routes/inventory';
 import dashboardRoutes from './routes/dashboard';
+import userRoutes from './routes/users';
 
 
 const app = express();
@@ -30,6 +31,7 @@ app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/requisitions', requisitionRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/', (req, res) => {
   res.send('Logistics Maintenance API is running');

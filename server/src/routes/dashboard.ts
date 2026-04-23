@@ -25,8 +25,21 @@ router.get('/stats', authenticateToken, async (req, res) => {
 
     const requisitionsCount = await prisma.requisition.count();
 
+    const operationalCount = await prisma.equipment.count({
+      where: { status: 'Operational' }
+    });
+    const inMaintenanceCount = await prisma.equipment.count({
+      where: { status: 'Under Maintenance' }
+    });
+    const outOfServiceCount = await prisma.equipment.count({
+      where: { status: 'Out of Service' }
+    });
+
     res.json({
       equipment: equipmentCount,
+      operational: operationalCount,
+      inMaintenance: inMaintenanceCount,
+      outOfService: outOfServiceCount,
       maintenance: maintenanceCount,
       activeMaintenance: activeMaintenanceCount,
       lowStock: lowStockCount,

@@ -9,7 +9,11 @@
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:deploy": "prisma db push --accept-data-loss",
+    "prisma:seed": "prisma db seed",
     "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "ts-node src/../prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
