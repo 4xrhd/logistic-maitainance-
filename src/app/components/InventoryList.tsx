@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -20,7 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Plus, Search, Filter, AlertCircle } from "lucide-react";
+import { Plus, Search, Filter, AlertCircle, Loader2, Trash2 } from "lucide-react";
+import { api } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
 
 interface InventoryItem {
   id: string;
@@ -30,105 +32,81 @@ interface InventoryItem {
   unit: string;
   minStock: number;
   location: string;
-  lastRestocked: string;
+  lastRestocked: string | null;
   supplier: string;
 }
 
 export function InventoryList() {
+  const { token, user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
-  const [inventory] = useState<InventoryItem[]>([
-    {
-      id: "INV-001",
-      name: "Hydraulic Oil 20L",
-      category: "Fluids",
-      quantity: 25,
-      unit: "Bottles",
-      minStock: 10,
-      location: "Storage Room A",
-      lastRestocked: "2026-02-01",
-      supplier: "Industrial Supplies Co.",
-    },
-    {
-      id: "INV-002",
-      name: "Safety Vests",
-      category: "Safety Equipment",
-      quantity: 45,
-      unit: "Units",
-      minStock: 30,
-      location: "Safety Station",
-      lastRestocked: "2026-01-28",
-      supplier: "SafeWork Equipment",
-    },
-    {
-      id: "INV-003",
-      name: "Forklift Tires",
-      category: "Parts",
-      quantity: 8,
-      unit: "Units",
-      minStock: 6,
-      location: "Parts Room",
-      lastRestocked: "2026-01-20",
-      supplier: "Heavy Equipment Parts",
-    },
-    {
-      id: "INV-004",
-      name: "Hand Tools Set",
-      category: "Tools",
-      quantity: 5,
-      unit: "Sets",
-      minStock: 3,
-      location: "Tool Shed",
-      lastRestocked: "2026-02-10",
-      supplier: "Pro Tools Direct",
-    },
-    {
-      id: "INV-005",
-      name: "Pallet Wrap Film",
-      category: "Packaging",
-      quantity: 32,
-      unit: "Rolls",
-      minStock: 20,
-      location: "Packaging Station",
-      lastRestocked: "2026-02-05",
-      supplier: "Packaging Solutions Ltd.",
-    },
-    {
-      id: "INV-006",
-      name: "LED Work Lights",
-      category: "Equipment",
-      quantity: 3,
-      unit: "Units",
-      minStock: 5,
-      location: "Equipment Room",
-      lastRestocked: "2026-01-15",
-      supplier: "Lighting Warehouse",
-    },
-    {
-      id: "INV-007",
-      name: "Conveyor Belt Lubricant",
-      category: "Fluids",
-      quantity: 18,
-      unit: "Bottles",
-      minStock: 15,
-      location: "Storage Room B",
-      lastRestocked: "2026-02-08",
-      supplier: "Industrial Supplies Co.",
-    },
-    {
-      id: "INV-008",
-      name: "First Aid Kits",
-      category: "Safety Equipment",
-      quantity: 12,
-      unit: "Kits",
-      minStock: 10,
-      location: "Safety Station",
-      lastRestocked: "2026-01-25",
-      supplier: "Medical Supply Corp.",
-    },
-  ]);
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "",
+    quantity: 0,
+    unit: "",
+    minStock: 0,
+    location: "",
+    supplier: ""
+  });
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      console.log("FETCH [InventoryList]: User Role:", user?.role);
+      const data = await api.get<InventoryItem[]>('/inventory', token!);
+      setInventory(data);
+    } catch (error) {
+      console.error("FETCH ERROR [InventoryList]:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) fetchData();
+  }, [token]);
+
+  const handleCreate = async () => {
+    try {
+      const autoId = `INV-${Date.now()}`;
+      const payload = { ...formData, id: autoId };
+      
+      console.log("CREATE [InventoryList] PAYLOAD:", payload);
+      await api.post('/inventory', payload, token!);
+      setIsDialogOpen(false);
+      fetchData();
+      setFormData({
+        name: "",
+        category: "",
+        quantity: 0,
+        unit: "",
+        minStock: 0,
+        location: "",
+        supplier: ""
+      });
+    } catch (error) {
+      console.error("CREATE ERROR [InventoryList]:", error);
+      alert("Create failed. You may not have permission.");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    console.log("DEBUG: [handleDelete] CALLED with ID:", id);
+    try {
+      console.log("DEBUG: [handleDelete] Proceeding to API call for ID:", id);
+      await api.delete(`/inventory/${id}`, token!);
+      console.log("DEBUG: [handleDelete] API SUCCESS");
+      fetchData();
+    } catch (error) {
+      console.error("DEBUG: [handleDelete] API FAILED:", error);
+      alert("Delete failed. See console for details.");
+    }
+  };
 
   const getStockStatus = (quantity: number, minStock: number) => {
     if (quantity < minStock) {
@@ -161,88 +139,120 @@ export function InventoryList() {
             <h1 className="text-3xl font-semibold text-gray-900">Inventory Management</h1>
             <p className="text-gray-600 mt-1">Track supplies, parts, and equipment inventory</p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" />
-                Add Item
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Add Inventory Item</DialogTitle>
-                <DialogDescription>
-                  Register a new item to the inventory system.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="itemName">Item Name</Label>
-                  <Input id="itemName" placeholder="Enter item name" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="itemCategory">Category</Label>
-                  <Select>
-                    <SelectTrigger id="itemCategory">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="parts">Parts</SelectItem>
-                      <SelectItem value="fluids">Fluids</SelectItem>
-                      <SelectItem value="tools">Tools</SelectItem>
-                      <SelectItem value="safety">Safety Equipment</SelectItem>
-                      <SelectItem value="packaging">Packaging</SelectItem>
-                      <SelectItem value="equipment">Equipment</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+          
+          {user?.role === 'ADMIN' && (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Add Item
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Add Inventory Item</DialogTitle>
+                  <DialogDescription>
+                    Register a new item to the inventory system.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="currentQuantity">Quantity</Label>
-                    <Input id="currentQuantity" type="number" placeholder="0" />
+                    <Label htmlFor="itemName">Item Name</Label>
+                    <Input 
+                      id="itemName" 
+                      placeholder="Enter item name" 
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="itemUnit">Unit</Label>
-                    <Select>
-                      <SelectTrigger id="itemUnit">
-                        <SelectValue placeholder="Select unit" />
+                    <Label htmlFor="itemCategory">Category</Label>
+                    <Select onValueChange={(val) => setFormData({...formData, category: val})}>
+                      <SelectTrigger id="itemCategory">
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="units">Units</SelectItem>
-                        <SelectItem value="boxes">Boxes</SelectItem>
-                        <SelectItem value="bottles">Bottles</SelectItem>
-                        <SelectItem value="rolls">Rolls</SelectItem>
-                        <SelectItem value="sets">Sets</SelectItem>
-                        <SelectItem value="kits">Kits</SelectItem>
+                        <SelectItem value="Parts">Parts</SelectItem>
+                        <SelectItem value="Fluids">Fluids</SelectItem>
+                        <SelectItem value="Tools">Tools</SelectItem>
+                        <SelectItem value="Safety Equipment">Safety Equipment</SelectItem>
+                        <SelectItem value="Packaging">Packaging</SelectItem>
+                        <SelectItem value="Equipment">Equipment</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="currentQuantity">Quantity</Label>
+                      <Input 
+                        id="currentQuantity" 
+                        type="number" 
+                        placeholder="0" 
+                        value={formData.quantity}
+                        onChange={(e) => setFormData({...formData, quantity: parseInt(e.target.value) || 0})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="itemUnit">Unit</Label>
+                      <Select onValueChange={(val) => setFormData({...formData, unit: val})}>
+                        <SelectTrigger id="itemUnit">
+                          <SelectValue placeholder="Select unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Units">Units</SelectItem>
+                          <SelectItem value="Boxes">Boxes</SelectItem>
+                          <SelectItem value="Bottles">Bottles</SelectItem>
+                          <SelectItem value="Rolls">Rolls</SelectItem>
+                          <SelectItem value="Sets">Sets</SelectItem>
+                          <SelectItem value="Kits">Kits</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="minStockLevel">Minimum Stock Level</Label>
+                    <Input 
+                      id="minStockLevel" 
+                      type="number" 
+                      placeholder="0" 
+                      value={formData.minStock}
+                      onChange={(e) => setFormData({...formData, minStock: parseInt(e.target.value) || 0})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="itemLocation">Storage Location</Label>
+                    <Input 
+                      id="itemLocation" 
+                      placeholder="e.g., Storage Room A" 
+                      value={formData.location}
+                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="itemSupplier">Supplier</Label>
+                    <Input 
+                      id="itemSupplier" 
+                      placeholder="Enter supplier name" 
+                      value={formData.supplier}
+                      onChange={(e) => setFormData({...formData, supplier: e.target.value})}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="minStockLevel">Minimum Stock Level</Label>
-                  <Input id="minStockLevel" type="number" placeholder="0" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="itemLocation">Storage Location</Label>
-                  <Input id="itemLocation" placeholder="e.g., Storage Room A" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="itemSupplier">Supplier</Label>
-                  <Input id="itemSupplier" placeholder="Enter supplier name" />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={() => setIsDialogOpen(false)}>Add Item</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreate} disabled={!formData.name || !formData.category || formData.quantity <= 0}>
+                    Add Item
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
         {/* Low Stock Alert */}
-        {lowStockItems.length > 0 && (
+        {!isLoading && lowStockItems.length > 0 && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
             <div className="flex-1">
@@ -287,77 +297,106 @@ export function InventoryList() {
       {/* Inventory Table */}
       <Card>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Item ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Quantity
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Min Stock
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Location
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Restocked
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Supplier
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredInventory.map((item) => {
-                const stockStatus = getStockStatus(item.quantity, item.minStock);
-                return (
-                  <tr key={item.id} className="hover:bg-gray-50 cursor-pointer">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {item.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {item.category}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {item.quantity} {item.unit}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {item.minStock} {item.unit}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge variant="secondary" className={stockStatus.color}>
-                        {stockStatus.status}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {item.location}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {item.lastRestocked}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {item.supplier}
+          {isLoading ? (
+            <div className="flex items-center justify-center p-12">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Item ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Quantity
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Min Stock
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Last Restocked
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Supplier
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredInventory.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
+                      No inventory items found.
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ) : (
+                  filteredInventory.map((item) => {
+                    const stockStatus = getStockStatus(item.quantity, item.minStock);
+                    return (
+                      <tr key={item.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {item.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {item.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {item.category}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {item.quantity} {item.unit}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {item.minStock} {item.unit}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Badge variant="secondary" className={stockStatus.color}>
+                            {stockStatus.status}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {item.location}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {item.lastRestocked ? new Date(item.lastRestocked).toLocaleDateString() : "Never"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {item.supplier}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {user?.role === 'ADMIN' && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                              onClick={() => handleDelete(item.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </Card>
     </div>

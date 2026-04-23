@@ -10,7 +10,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const equipment = await prisma.equipment.findMany();
     res.json(equipment);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching equipment', error });
+    res.status(500).json({ message: 'Error fetching equipment' });
   }
 });
 
@@ -18,12 +18,14 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
   try {
     const { id, name, type, location, status } = req.body;
+    const uniqueId = id ? `${id}-${Math.random().toString(36).substr(2, 4)}` : `EQ-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
     const equipment = await prisma.equipment.create({
-      data: { id, name, type, location, status: status || 'Operational' }
+      data: { id: uniqueId, name, type, location, status: status || 'Operational' }
     });
     res.status(201).json(equipment);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating equipment', error });
+    console.error("BACKEND ERROR [POST /equipment]:", error);
+    res.status(500).json({ message: 'Error creating equipment' });
   }
 });
 
@@ -38,7 +40,7 @@ router.put('/:id', authenticateToken, authorizeRole(['ADMIN']), async (req, res)
     });
     res.json(equipment);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating equipment', error });
+    res.status(500).json({ message: 'Error updating equipment' });
   }
 });
 
@@ -49,7 +51,7 @@ router.delete('/:id', authenticateToken, authorizeRole(['ADMIN']), async (req, r
     await prisma.equipment.delete({ where: { id } });
     res.json({ message: 'Equipment deleted' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting equipment', error });
+    res.status(500).json({ message: 'Error deleting equipment' });
   }
 });
 

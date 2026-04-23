@@ -12,7 +12,7 @@ router.get('/', authenticateToken, async (req, res) => {
     });
     res.json(requisitions);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching requisitions', error });
+    res.status(500).json({ message: 'Error fetching requisitions' });
   }
 });
 
@@ -20,9 +20,10 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req: AuthRequest, res) => {
   try {
     const { id, item, category, quantity, unit, estimatedCost } = req.body;
+    const uniqueId = id ? `${id}-${Math.random().toString(36).substr(2, 4)}` : `REQ-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
     const requisition = await prisma.requisition.create({
       data: {
-        id,
+        id: uniqueId,
         item,
         category,
         quantity: parseInt(quantity),
@@ -34,7 +35,8 @@ router.post('/', authenticateToken, async (req: AuthRequest, res) => {
     });
     res.status(201).json(requisition);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating requisition', error });
+    console.error("BACKEND ERROR [POST /requisitions]:", error);
+    res.status(500).json({ message: 'Error creating requisition' });
   }
 });
 
@@ -49,7 +51,20 @@ router.put('/:id', authenticateToken, authorizeRole(['ADMIN']), async (req, res)
     });
     res.json(requisition);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating requisition', error });
+    console.error("BACKEND ERROR [PUT /requisitions]:", error);
+    res.status(500).json({ message: 'Error updating requisition' });
+  }
+});
+
+// Delete requisition
+router.delete('/:id', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
+  try {
+    const id = req.params.id as string;
+    await prisma.requisition.delete({ where: { id } });
+    res.json({ message: 'Requisition deleted' });
+  } catch (error) {
+    console.error("BACKEND ERROR [DELETE /requisitions]:", error);
+    res.status(500).json({ message: 'Error deleting requisition' });
   }
 });
 

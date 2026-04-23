@@ -33,7 +33,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
       requisitions: requisitionsCount
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching stats', error });
+    res.status(500).json({ message: 'Error fetching stats' });
   }
 });
 
