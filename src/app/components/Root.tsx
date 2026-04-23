@@ -2,21 +2,26 @@ import { Outlet, Link, useLocation } from "react-router";
 import { Package, Wrench, FileText, Box, BarChart3, LogOut, User as UserIcon } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import LoginPage from "./LoginPage";
+import SignupPage from "./SignupPage";
+import { useState } from "react";
 
 export function Root() {
   const location = useLocation();
   const { user, logout, isLoading } = useAuth();
+  const [authView, setAuthView] = useState<'login' | 'signup'>('login');
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">
-        Loading...
+      <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-400 font-bold uppercase tracking-widest animate-pulse">
+        Syncing Fleet...
       </div>
     );
   }
 
   if (!user) {
-    return <LoginPage />;
+    return authView === 'login' 
+      ? <LoginPage onSwitchToSignup={() => setAuthView('signup')} /> 
+      : <SignupPage onSwitchToLogin={() => setAuthView('login')} />;
   }
 
   const navItems = [

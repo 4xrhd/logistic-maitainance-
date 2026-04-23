@@ -1,22 +1,21 @@
+import { useState, useEffect, useMemo } from "react";
 import { Card } from "./ui/card";
 import { 
   Wrench, 
   FileText, 
-  CheckCircle2, 
-  Clock, 
   AlertTriangle,
-  TrendingUp,
-  Calendar,
   Activity,
-  Users,
-  Package
+  Loader2,
+  ChevronRight,
+  Boxes,
+  Truck,
+  ArrowUpRight,
+  ArrowDownRight
 } from "lucide-react";
 import { Link } from "react-router";
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
@@ -29,153 +28,146 @@ import {
 } from "recharts";
 import { Progress } from "./ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { api } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
+
+interface DashboardStats {
+  equipment: number;
+  operational: number;
+  inMaintenance: number;
+  outOfService: number;
+  maintenance: number;
+  activeMaintenance: number;
+  lowStock: number;
+  requisitions: number;
+}
 
 export function Dashboard() {
+  const { token } = useAuth();
+  const [apiStats, setApiStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await api.get<DashboardStats>('/dashboard/stats', token!);
+        setApiStats(data);
+      } catch (error) {
+        console.error("DEBUG: [fetchStats] Failed to fetch dashboard stats", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (token) fetchStats();
+  }, [token]);
+
+  // FIX: Clean data for Pie Chart to avoid overlap and rendering issues
+  const equipmentStatusData = useMemo(() => {
+    if (!apiStats) return [];
+    
+    const data = [
+      { name: "Operational", value: Number(apiStats.operational) || 0, color: "#10b981" },
+      { name: "In Maintenance", value: Number(apiStats.inMaintenance) || 0, color: "#f59e0b" },
+      { name: "Out of Service", value: Number(apiStats.outOfService) || 0, color: "#ef4444" },
+    ].filter(item => item.value > 0); // Only show segments with values
+
+    return data;
+  }, [apiStats]);
+
+  const totalEquipmentValue = equipmentStatusData.reduce((acc, curr) => acc + curr.value, 0);
+
   const stats = [
     {
       title: "Active Maintenance",
-      value: "12",
-      change: "+3 from last week",
-      trend: "+25%",
+      value: apiStats?.activeMaintenance ?? 0,
+      label: "Open Requests",
       icon: Wrench,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
+      trend: "up",
+      trendValue: "12%"
     },
     {
       title: "Pending Requisitions",
-      value: "8",
-      change: "+2 from last week",
-      trend: "+33%",
+      value: apiStats?.requisitions ?? 0,
+      label: "Awaiting Approval",
       icon: FileText,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
+      color: "text-amber-600",
+      bgColor: "bg-amber-50",
+      trend: "down",
+      trendValue: "5%"
     },
     {
-      title: "Completed This Month",
-      value: "45",
-      change: "+12 from last month",
-      trend: "+36%",
-      icon: CheckCircle2,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
+      title: "Total Assets",
+      value: apiStats?.equipment ?? 0,
+      label: "Managed Units",
+      icon: Truck,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50",
+      trend: "up",
+      trendValue: "2"
     },
     {
-      title: "Overdue Tasks",
-      value: "3",
-      change: "Requires attention",
-      trend: "-1",
-      icon: AlertTriangle,
-      color: "text-red-600",
-      bgColor: "bg-red-50",
+      title: "Low Stock Items",
+      value: apiStats?.lowStock ?? 0,
+      label: "Critical Inventory",
+      icon: Boxes,
+      color: "text-rose-600",
+      bgColor: "bg-rose-50",
+      trend: "up",
+      trendValue: "3"
     },
   ];
 
-  const maintenanceByType = [
-    { name: "Preventive", value: 45, color: "#3b82f6" },
-    { name: "Corrective", value: 30, color: "#f59e0b" },
-    { name: "Inspection", value: 15, color: "#10b981" },
-    { name: "Emergency", value: 10, color: "#ef4444" },
-  ];
-
-  const weeklyTrend = [
-    { day: "Mon", completed: 8, pending: 5 },
-    { day: "Tue", completed: 12, pending: 7 },
-    { day: "Wed", completed: 10, pending: 6 },
-    { day: "Thu", completed: 15, pending: 8 },
-    { day: "Fri", completed: 11, pending: 4 },
-    { day: "Sat", completed: 6, pending: 2 },
-    { day: "Sun", completed: 4, pending: 1 },
-  ];
-
-  const equipmentStatus = [
-    { name: "Operational", value: 68, color: "#10b981" },
-    { name: "Maintenance", value: 12, color: "#f59e0b" },
-    { name: "Out of Service", value: 5, color: "#ef4444" },
-  ];
-
-  const topEquipmentMaintenance = [
-    { equipment: "Forklift Fleet", count: 18, status: 85 },
-    { equipment: "Conveyor Systems", count: 12, status: 92 },
-    { equipment: "Loading Docks", count: 8, status: 78 },
-    { equipment: "Pallet Jacks", count: 15, status: 88 },
-    { equipment: "Warehouse Cranes", count: 6, status: 95 },
-  ];
-
-  const recentMaintenance = [
-    { id: "M-2026-001", equipment: "Forklift FL-205", status: "In Progress", priority: "High", date: "2026-02-15", technician: "John Smith" },
-    { id: "M-2026-002", equipment: "Conveyor Belt CB-12", status: "Pending", priority: "Medium", date: "2026-02-14", technician: "Sarah Johnson" },
-    { id: "M-2026-003", equipment: "Pallet Jack PJ-89", status: "Completed", priority: "Low", date: "2026-02-13", technician: "Mike Chen" },
-    { id: "M-2026-004", equipment: "Loading Dock LD-3", status: "In Progress", priority: "High", date: "2026-02-12", technician: "John Smith" },
-    { id: "M-2026-005", equipment: "Warehouse Crane WC-01", status: "Scheduled", priority: "Medium", date: "2026-02-25", technician: "Sarah Johnson" },
-  ];
-
-  const upcomingSchedule = [
-    { equipment: "Forklift FL-206", type: "Oil Change", date: "2026-02-24", time: "09:00 AM" },
-    { equipment: "Conveyor Belt CB-14", type: "Belt Alignment", date: "2026-02-25", time: "02:00 PM" },
-    { equipment: "Loading Dock LD-4", type: "Hydraulic Check", date: "2026-02-26", time: "10:30 AM" },
-    { equipment: "Pallet Jack PJ-91", type: "Annual Inspection", date: "2026-02-27", time: "11:00 AM" },
-  ];
-
-  const technicianWorkload = [
-    { name: "John Smith", active: 5, completed: 28, efficiency: 94 },
-    { name: "Sarah Johnson", active: 4, completed: 32, efficiency: 96 },
-    { name: "Mike Chen", active: 3, completed: 25, efficiency: 89 },
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "in progress":
-        return "bg-blue-100 text-blue-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "scheduled":
-        return "bg-purple-100 text-purple-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority.toLowerCase()) {
-      case "high":
-        return "text-red-600";
-      case "medium":
-        return "text-yellow-600";
-      case "low":
-        return "text-green-600";
-      default:
-        return "text-gray-600";
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+        <p className="text-gray-500 font-medium animate-pulse">Syncing dashboard data...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-gray-900">Logistics Maintenance Dashboard</h1>
-        <p className="text-gray-600 mt-1">Real-time overview of maintenance operations</p>
+    <div className="p-6 lg:p-8 bg-[#f8fafc] min-h-screen space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">System Overview</h1>
+          <p className="text-slate-500 mt-1">Monitor fleet health and maintenance performance</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="px-4 py-2 bg-white border border-slate-200 rounded-lg shadow-sm flex items-center gap-2">
+            <Activity className="w-4 h-4 text-green-500" />
+            <span className="text-sm font-semibold text-slate-700">Live Status: Stable</span>
+          </div>
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
+            <Card key={index} className="p-5 border-none shadow-sm hover:shadow-md transition-all duration-300 group">
               <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
-                  <p className="text-3xl font-semibold text-gray-900 mb-2">{stat.value}</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs text-gray-500">{stat.change}</p>
-                    <span className={`text-xs font-medium ${stat.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                      {stat.trend}
-                    </span>
+                <div className="space-y-3">
+                  <div className={`p-2.5 rounded-xl ${stat.bgColor} ${stat.color} inline-block`}>
+                    <Icon className="w-5 h-5" />
                   </div>
-                </div>
-                <div className={`${stat.bgColor} ${stat.color} p-3 rounded-lg`}>
-                  <Icon className="w-6 h-6" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">{stat.title}</p>
+                    <div className="flex items-baseline gap-2">
+                      <h3 className="text-2xl font-bold text-slate-900">{stat.value}</h3>
+                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
+                        stat.trend === 'up' ? 'text-green-600 bg-green-50' : 'text-amber-600 bg-amber-50'
+                      }`}>
+                        {stat.trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                        {stat.trendValue}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -183,263 +175,195 @@ export function Dashboard() {
         })}
       </div>
 
-      <Tabs defaultValue="overview" className="mb-8">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="schedule">Schedule</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="bg-slate-100 p-1 border-none">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-6">Overview</TabsTrigger>
+          <TabsTrigger value="fleet" className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-6">Fleet Health</TabsTrigger>
+          <TabsTrigger value="inventory" className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-6">Inventory</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6 mt-6">
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Maintenance by Type */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Maintenance by Type</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={maintenanceByType}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {maintenanceByType.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-
-            {/* Weekly Trend */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Weekly Activity Trend</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={weeklyTrend}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="completed" fill="#10b981" name="Completed" />
-                  <Bar dataKey="pending" fill="#f59e0b" name="Pending" />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-          </div>
-
-          {/* Equipment Status and Top Maintenance */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Equipment Status Overview */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Equipment Status</h2>
-              <div className="space-y-4">
-                {equipmentStatus.map((item, index) => (
-                  <div key={index}>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-gray-700">{item.name}</span>
-                      <span className="text-sm font-medium text-gray-900">{item.value} units</span>
-                    </div>
-                    <Progress value={(item.value / 85) * 100} className="h-2" style={{ backgroundColor: item.color + '20' }} />
+        <TabsContent value="overview" className="space-y-6 animate-in fade-in duration-500">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {/* Chart 1: Fleet Status */}
+            <Card className="xl:col-span-1 p-6 border-none shadow-sm bg-white overflow-hidden">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-bold text-slate-800">Fleet Status</h2>
+                <Link to="/equipment" className="text-xs font-semibold text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors">Manage Assets</Link>
+              </div>
+              
+              <div className="relative h-[280px]">
+                {totalEquipmentValue > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={equipmentStatusData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={65}
+                        outerRadius={90}
+                        paddingAngle={8}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {equipmentStatusData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                        itemStyle={{ fontSize: '12px', fontWeight: '600' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-2">
+                    <AlertTriangle className="w-8 h-8 text-slate-300" />
+                    <p className="text-sm font-medium text-slate-500">No fleet data available</p>
                   </div>
-                ))}
+                )}
+                
+                {totalEquipmentValue > 0 && (
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                    <span className="block text-3xl font-bold text-slate-900">{totalEquipmentValue}</span>
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Total Units</span>
+                  </div>
+                )}
               </div>
-              <div className="mt-6 pt-6 border-t">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Total Equipment</span>
-                  <span className="text-2xl font-semibold text-gray-900">85</span>
-                </div>
-              </div>
-            </Card>
 
-            {/* Top Equipment by Maintenance */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Equipment Health Status</h2>
-              <div className="space-y-4">
-                {topEquipmentMaintenance.map((item, index) => (
-                  <div key={index}>
-                    <div className="flex justify-between items-center mb-2">
-                      <div>
-                        <span className="text-sm font-medium text-gray-900">{item.equipment}</span>
-                        <p className="text-xs text-gray-500">{item.count} maintenance records</p>
-                      </div>
-                      <span className="text-sm font-medium text-gray-900">{item.status}%</span>
-                    </div>
-                    <Progress value={item.status} className="h-2" />
+              <div className="grid grid-cols-3 gap-2 mt-4">
+                {equipmentStatusData.map((item, i) => (
+                  <div key={i} className="text-center p-2 rounded-lg bg-slate-50 border border-slate-100">
+                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1">{item.name}</span>
+                    <span className="text-sm font-bold text-slate-800">{item.value}</span>
                   </div>
                 ))}
               </div>
             </Card>
-          </div>
 
-          {/* Recent Activity */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Recent Maintenance Activity</h2>
-              <Link to="/maintenance" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                View All →
-              </Link>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Equipment</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Technician</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {recentMaintenance.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.id}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{item.equipment}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{item.technician}</td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs font-medium ${getPriorityColor(item.priority)}`}>
-                          {item.priority}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
-                          {item.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{item.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-6 mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Monthly Completion Rate */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Completion Rate</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={[
-                  { month: "Jan", rate: 85 },
-                  { month: "Feb", rate: 88 },
-                  { month: "Mar", rate: 92 },
-                  { month: "Apr", rate: 87 },
-                  { month: "May", rate: 90 },
-                  { month: "Jun", rate: 94 },
-                ]}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="rate" stroke="#3b82f6" strokeWidth={2} name="Completion Rate %" />
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
-
-            {/* Cost Analysis */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Maintenance Cost</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={[
-                  { month: "Jan", cost: 12500 },
-                  { month: "Feb", cost: 15200 },
-                  { month: "Mar", cost: 13800 },
-                  { month: "Apr", cost: 16500 },
-                  { month: "May", cost: 14200 },
-                  { month: "Jun", cost: 15800 },
-                ]}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="cost" fill="#8b5cf6" name="Cost ($)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="schedule" className="space-y-6 mt-6">
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Upcoming Scheduled Maintenance</h2>
-              <Calendar className="w-5 h-5 text-gray-400" />
-            </div>
-            <div className="space-y-4">
-              {upcomingSchedule.map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-blue-100 p-3 rounded-lg">
-                      <Wrench className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{item.equipment}</p>
-                      <p className="text-sm text-gray-600">{item.type}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">{item.date}</p>
-                    <p className="text-sm text-gray-600">{item.time}</p>
-                  </div>
+            {/* Chart 2: Maintenance Trends */}
+            <Card className="xl:col-span-2 p-6 border-none shadow-sm bg-white">
+               <div className="flex items-center justify-between mb-6">
+                <h2 className="font-bold text-slate-800">Weekly Performance</h2>
+                <div className="flex items-center gap-4 text-xs font-semibold">
+                   <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Completed</div>
+                   <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Pending</div>
                 </div>
-              ))}
-            </div>
-          </Card>
-        </TabsContent>
+              </div>
+              
+              <div className="h-[320px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={[
+                    { day: "Mon", completed: 8, pending: 5 },
+                    { day: "Tue", completed: 12, pending: 7 },
+                    { day: "Wed", completed: 10, pending: 6 },
+                    { day: "Thu", completed: 15, pending: 8 },
+                    { day: "Fri", completed: 11, pending: 4 },
+                    { day: "Sat", completed: 6, pending: 2 },
+                    { day: "Sun", completed: 4, pending: 1 },
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis 
+                      dataKey="day" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} 
+                      dy={10}
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
+                    />
+                    <Tooltip 
+                      cursor={{ fill: '#f8fafc' }}
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                    />
+                    <Bar dataKey="completed" fill="#10b981" radius={[4, 4, 0, 0]} barSize={24} />
+                    <Bar dataKey="pending" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={24} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
 
-        <TabsContent value="team" className="space-y-6 mt-6">
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Technician Performance</h2>
-              <Users className="w-5 h-5 text-gray-400" />
-            </div>
-            <div className="space-y-6">
-              {technicianWorkload.map((tech, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center justify-between mb-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Quick Actions Card */}
+            <Card className="p-6 border-none shadow-sm bg-white group overflow-hidden">
+               <h2 className="font-bold text-slate-800 mb-6">Workflow Shortcuts</h2>
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
+                  <Link to="/maintenance" className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all group/link">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-blue-700">
-                          {tech.name.split(' ').map(n => n[0]).join('')}
-                        </span>
+                      <div className="p-2 bg-blue-100 text-blue-600 rounded-lg group-hover/link:bg-blue-600 group-hover/link:text-white transition-colors">
+                        <Wrench className="w-4 h-4" />
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{tech.name}</p>
-                        <p className="text-sm text-gray-600">{tech.active} active tasks</p>
-                      </div>
+                      <span className="text-sm font-bold text-slate-700">Maintenance</span>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-600">Efficiency</p>
-                      <p className="text-xl font-semibold text-gray-900">{tech.efficiency}%</p>
+                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover/link:text-blue-400" />
+                  </Link>
+
+                  <Link to="/inventory" className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-all group/link">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg group-hover/link:bg-emerald-600 group-hover/link:text-white transition-colors">
+                        <Boxes className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm font-bold text-slate-700">Stock Items</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover/link:text-emerald-400" />
+                  </Link>
+
+                  <Link to="/requisitions" className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-purple-200 hover:bg-purple-50/50 transition-all group/link">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 text-purple-600 rounded-lg group-hover/link:bg-purple-600 group-hover/link:text-white transition-colors">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm font-bold text-slate-700">Requisitions</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover/link:text-purple-400" />
+                  </Link>
+
+                  <Link to="/equipment" className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 transition-all group/link">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg group-hover/link:bg-indigo-600 group-hover/link:text-white transition-colors">
+                        <Truck className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm font-bold text-slate-700">Asset Fleet</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover/link:text-indigo-400" />
+                  </Link>
+               </div>
+               {/* Background Glow */}
+               <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-slate-50 rounded-full blur-3xl -z-0 opacity-50 group-hover:bg-blue-50 transition-colors duration-500" />
+            </Card>
+
+            {/* Health Overview */}
+            <Card className="p-6 border-none shadow-sm bg-white">
+              <h2 className="font-bold text-slate-800 mb-6">System Health Matrix</h2>
+              <div className="space-y-6">
+                {equipmentStatusData.length > 0 ? equipmentStatusData.map((item, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                         <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: item.color }} />
+                         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{item.name}</span>
+                      </div>
+                      <span className="text-xs font-bold text-slate-900">{Math.round((item.value / totalEquipmentValue) * 100)}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full rounded-full transition-all duration-1000" 
+                        style={{ width: `${(item.value / totalEquipmentValue) * 100}%`, backgroundColor: item.color }}
+                      />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-600">Active Tasks</p>
-                      <p className="font-medium text-gray-900">{tech.active}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Completed</p>
-                      <p className="font-medium text-gray-900">{tech.completed}</p>
-                    </div>
+                )) : (
+                  <div className="py-8 text-center text-slate-400">
+                    <Activity className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                    <p className="text-sm">Pending fleet synchronization...</p>
                   </div>
-                  <Progress value={tech.efficiency} className="h-2 mt-4" />
-                </div>
-              ))}
-            </div>
-          </Card>
+                )}
+              </div>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

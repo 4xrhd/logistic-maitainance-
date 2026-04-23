@@ -11,6 +11,15 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name, role } = req.body;
+    const userRole = role || 'TECHNICIAN';
+
+    // Limit technicians to 5
+    if (userRole === 'TECHNICIAN') {
+      const techCount = await prisma.user.count({ where: { role: 'TECHNICIAN' } });
+      if (techCount >= 5) {
+        return res.status(400).json({ message: 'Technician limit reached (Maximum 5)' });
+      }
+    }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -23,7 +32,7 @@ router.post('/register', async (req, res) => {
         email,
         password: hashedPassword,
         name,
-        role: role || 'TECHNICIAN'
+        role: userRole
       }
     });
 
@@ -36,7 +45,7 @@ router.post('/register', async (req, res) => {
     res.status(201).json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Error creating user', error });
+    res.status(500).json({ message: 'Error creating user' });
   }
 });
 
@@ -66,7 +75,7 @@ router.post('/login', async (req, res) => {
     res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Error logging in', error });
+    res.status(500).json({ message: 'Error logging in' });
   }
 });
 

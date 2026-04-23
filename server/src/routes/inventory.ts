@@ -10,7 +10,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const items = await prisma.inventoryItem.findMany();
     res.json(items);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching inventory', error });
+    res.status(500).json({ message: 'Error fetching inventory' });
   }
 });
 
@@ -18,9 +18,10 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
   try {
     const { id, name, category, quantity, unit, minStock, location, supplier } = req.body;
+    const uniqueId = id ? `${id}-${Math.random().toString(36).substr(2, 4)}` : `INV-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
     const item = await prisma.inventoryItem.create({
       data: {
-        id,
+        id: uniqueId,
         name,
         category,
         quantity: parseInt(quantity),
@@ -32,7 +33,8 @@ router.post('/', authenticateToken, authorizeRole(['ADMIN']), async (req, res) =
     });
     res.status(201).json(item);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating inventory item', error });
+    console.error("BACKEND ERROR [POST /inventory]:", error);
+    res.status(500).json({ message: 'Error creating inventory item' });
   }
 });
 
@@ -47,7 +49,19 @@ router.put('/:id', authenticateToken, async (req, res) => {
     });
     res.json(item);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating inventory', error });
+    res.status(500).json({ message: 'Error updating inventory' });
+  }
+});
+
+// Delete item
+router.delete('/:id', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
+  try {
+    const id = req.params.id as string;
+    await prisma.inventoryItem.delete({ where: { id } });
+    res.json({ message: 'Inventory item deleted' });
+  } catch (error) {
+    console.error("BACKEND ERROR [DELETE /inventory]:", error);
+    res.status(500).json({ message: 'Error deleting item' });
   }
 });
 
