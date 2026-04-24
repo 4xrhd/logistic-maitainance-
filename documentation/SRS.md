@@ -84,7 +84,7 @@ FleetCore is a standalone 3-tier web application. It implements a modern technol
 
 ## Appendices
 ### Appendix A: Implementation Summary
-- **Seed Profile**: Admin (admin@logistic.com) and Technicians (tech@logistic.com).
+- **Seed Profile**: Admin (admin@logistic.com / admin123) and Technicians (tech@logistic.com / tech123).
 - **Analytics Engine**: Powered by `recharts` for visual data synthesis.
 - **Architecture**: Modular Component model with dedicated Context providers for Auth.
 

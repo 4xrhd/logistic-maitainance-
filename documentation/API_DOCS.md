@@ -3,7 +3,7 @@
 The FleetCore system exposes a comprehensive RESTful API for logistics orchestration. All requests (except authentication) require an `Authorization: Bearer <token>` header with a valid JWT token.
 
 ## Base URL
-- **Production Endpoint**: `https://fleetcore-backend.render.com/api`
+- **Production Endpoint**: `https://logistic-maitainance.onrender.com/api`
 - **Development**: `http://localhost:3001/api`
 
 ## Authentication Gate
@@ -45,16 +45,16 @@ Returns a comprehensive list of system operators including active task loads.
 [
   {
     "id": 1,
-    "name": "Alex Admin",
-    "email": "admin@fleetcore.com",
+    "name": "Admin User",
+    "email": "admin@logistic.com",
     "role": "ADMIN",
     "assignedTasks": 0,
     "createdAt": "2026-04-24T00:00:00Z"
   },
   {
     "id": 2,
-    "name": "Sam Tech",
-    "email": "tech@fleetcore.com",
+    "name": "John Tech",
+    "email": "tech@logistic.com",
     "role": "TECHNICIAN",
     "assignedTasks": 4,
     "createdAt": "2026-04-24T00:00:00Z"
