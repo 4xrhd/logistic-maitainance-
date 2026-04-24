@@ -12,9 +12,6 @@
     "prisma:seed": "prisma db seed",
     "postinstall": "prisma generate"
   },
-  "prisma": {
-    "seed": "ts-node src/../prisma/seed.ts"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
