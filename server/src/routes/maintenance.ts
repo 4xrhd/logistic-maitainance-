@@ -62,7 +62,7 @@ router.post('/', authenticateToken, authorizeRole(['TECHNICIAN']), async (req: A
 router.put('/:id', authenticateToken, async (req: AuthRequest, res) => {
   const userId = req.user?.id;
   const userRole = req.user?.role;
-  const { id } = req.params;
+  const id = req.params.id as string;
   const { status, assignedToId } = req.body;
 
   try {

@@ -30,7 +30,7 @@ router.get('/', authenticateToken, authorizeRole(['ADMIN']), async (req, res) =>
 // Update user role (Admin only)
 router.put('/:id/role', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { role } = req.body;
     
     const user = await prisma.user.update({
@@ -47,7 +47,7 @@ router.put('/:id/role', authenticateToken, authorizeRole(['ADMIN']), async (req,
 // Delete user (Admin only)
 router.delete('/:id', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     
     // Prevent self-deletion
     if (parseInt(id) === (req as any).user.id) {
