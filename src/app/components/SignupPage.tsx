@@ -55,9 +55,9 @@ const SignupPage: React.FC<SignupPageProps> = ({ onSwitchToLogin }) => {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12 sm:px-6 lg:px-8 font-sans">
       <Card className="w-full max-w-md p-0 border-none shadow-2xl rounded-3xl overflow-hidden animate-in fade-in zoom-in duration-500">
         {/* Banner */}
-        <div className="bg-blue-600 p-8 text-center text-white relative overflow-hidden">
+        <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-8 text-center text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10">
-            <UserPlus className="w-24 h-24 rotate-12" />
+            <UserPlus className="w-24 h-24 rotate-12 text-white" />
           </div>
           <div className="relative z-10">
              <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/30">
@@ -116,9 +116,9 @@ const SignupPage: React.FC<SignupPageProps> = ({ onSwitchToLogin }) => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold shadow-lg shadow-slate-100 transition-all active:scale-[0.98]"
+              className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-100 transition-all active:scale-[0.98]"
             >
-              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Complete Enrollment"}
+              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Complete Digital Enrollment"}
             </Button>
           </form>
 

@@ -60,11 +60,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToSignup }) => {
               >
                 <Truck size={32} />
               </motion.div>
-              <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
-                Logistics <span className="text-primary">Pro</span>
+              <h2 className="mt-6 text-3xl font-black tracking-tight text-slate-900 leading-none">
+                FLEET<br/><span className="text-indigo-600">CORE</span>
               </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Centralized Maintenance & Operations
+              <p className="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                Logistics & Maintenance
               </p>
             </div>
 
@@ -130,7 +130,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToSignup }) => {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={isLoading}
-                className="relative flex w-full justify-center rounded-2xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 outline-none transition-all hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background disabled:opacity-70 disabled:grayscale-[0.5]"
+                className="relative flex w-full justify-center rounded-2xl bg-indigo-600 px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 outline-none transition-all hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-70 disabled:grayscale-[0.5]"
               >
                 {isLoading ? (
                   <Loader2 className="animate-spin" size={20} />
