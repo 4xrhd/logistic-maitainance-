@@ -10,7 +10,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types"],
+    "types": ["node", "express", "cors", "jsonwebtoken"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
