@@ -1,6 +1,6 @@
 # Use Case Analysis
 
-This document describes the comprehensive use cases for the FleetCore: Logistics Maintenance Management System, categorized by user roles and system functionality.
+This document describes the comprehensive use cases for the FleetPro: Logistics Maintenance Management System, categorized by user roles and system functionality.
 
 ## Use Case Diagram
 
@@ -9,7 +9,7 @@ useCaseDiagram
     actor Admin
     actor Technician
     
-    package "FleetCore System" {
+    package "FleetPro System" {
         usecase "User Authentication" as UC1
         usecase "View Enhanced Dashboard" as UC2
         usecase "Manage Equipment Registry" as UC3
@@ -57,7 +57,7 @@ useCaseDiagram
 - **Description**: Allows users to securely access the system. Registration includes name, email, and password. Login provides a JWT token for RBAC-enforced API interactions.
 - **Preconditions**: User has valid credentials or requires enrollment.
 - **Normal Flow**: 
-  1. User navigates to FleetCore login portal.
+  1. User navigates to FleetPro login portal.
   2. User enters credentials.
   3. System validates via bcrypt and provides scoped JWT.
   4. User is directed to the interactive dashboard.

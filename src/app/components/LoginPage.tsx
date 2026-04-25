@@ -61,7 +61,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToSignup }) => {
                 <Truck size={32} />
               </motion.div>
               <h2 className="mt-6 text-3xl font-black tracking-tight text-slate-900 leading-none">
-                FLEET<br/><span className="text-indigo-600">CORE</span>
+                FLEET<br/><span className="text-indigo-600">PRO</span>
               </h2>
               <p className="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                 Logistics & Maintenance

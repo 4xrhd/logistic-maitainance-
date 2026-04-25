@@ -43,7 +43,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onSwitchToLogin }) => {
               <CheckCircle2 className="w-10 h-10" />
            </div>
            <div>
-              <h2 className="text-2xl font-bold text-slate-900">Fleet Registered!</h2>
+              <h2 className="text-2xl font-bold text-slate-900">FleetPro Registered!</h2>
               <p className="text-slate-500 mt-2">Your technician profile has been created successfully. Redirecting to login...</p>
            </div>
         </Card>
@@ -64,7 +64,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onSwitchToLogin }) => {
                 <UserPlus className="w-8 h-8" />
              </div>
              <h2 className="text-2xl font-bold tracking-tight">Technician Enrollment</h2>
-             <p className="text-blue-100 text-sm mt-1">Join the Logistics Maintenance Fleet</p>
+             <p className="text-blue-100 text-sm mt-1">Join the FleetPro Maintenance Network</p>
           </div>
         </div>
 

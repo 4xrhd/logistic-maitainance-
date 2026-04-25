@@ -1,6 +1,6 @@
-# FleetCore API Documentation: v3.0
+# FleetPro API Documentation: v3.0
 
-The FleetCore system exposes a comprehensive RESTful API for logistics orchestration. All requests (except authentication) require an `Authorization: Bearer <token>` header with a valid JWT token.
+The FleetPro system exposes a comprehensive RESTful API for logistics orchestration. All requests (except authentication) require an `Authorization: Bearer <token>` header with a valid JWT token.
 
 ## Base URL
 - **Production Endpoint**: `https://logistic-maitainance.onrender.com/api`

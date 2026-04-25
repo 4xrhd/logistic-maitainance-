@@ -1,4 +1,4 @@
-# Deployment Guide: Logistics Maintenance Management System
+# Deployment Guide: FleetPro - Logistics Maintenance Management System
 
 This guide provides comprehensive instructions for deploying the Logistics Maintenance Management System using a split architecture: **Netlify** for the frontend and **Render** for the backend. This approach provides optimal performance and reliability on free tiers while maintaining separation of concerns.
 
@@ -99,7 +99,7 @@ Add these variables in Netlify dashboard under **"Site settings"** → **"Enviro
 ### Step 4: Deploy & Verify
 1. Click **"Deploy site"**
 2. Monitor build process in Netlify dashboard
-3. Once deployed, note your site URL (e.g., `https://logistics-maintenance.netlify.app`)
+3. Once deployed, note your site URL (e.g., `https://fleetpro-maintenance.netlify.app`)
 4. Test the application by visiting the URL
 
 ---
@@ -128,7 +128,7 @@ Add these variables in Netlify dashboard under **"Site settings"** → **"Enviro
 1. **Create Supabase Project:**
    - Go to [Supabase.com](https://supabase.com)
    - Click **"New project"**
-   - Name: `logistics-maintenance`
+   - Name: `fleetpro-maintenance`
    - Database password: Generate secure password
    - Region: Choose closest to your users
    - Click **"Create new project"** (takes 1-2 minutes)
@@ -196,7 +196,7 @@ Add these variables in Netlify dashboard under **"Site settings"** → **"Enviro
 ### Post-Deployment Testing
 - [ ] Visit frontend URL, verify page loads
 - [ ] Register new user account
-- [ ] Login with seeded credentials (admin@logistic.com/admin123)
+- [ ] Login with seeded credentials (admin@fleetpro.com/admin123)
 - [ ] Test dashboard loads with data
 - [ ] Create maintenance request
 - [ ] Update inventory quantity
@@ -282,6 +282,6 @@ Add these variables in Netlify dashboard under **"Site settings"** → **"Enviro
 
 **For University Project Submission:**
 - Include both frontend and backend URLs in submission
-- Provide test credentials (admin@logistic.com/admin123)
+- Provide test credentials (admin@fleetpro.com/admin123)
 - Document any known issues or limitations
 - Include screenshots of working functionality

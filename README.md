@@ -1,4 +1,4 @@
-# Logistics Maintenance Management System
+# FleetPro - Logistics Maintenance Management System
 
 A comprehensive full-stack web application for managing equipment maintenance, inventory tracking, and supply requisitions in logistics warehouse environments. Built as a complete university Software Engineering course project.
 
@@ -12,7 +12,7 @@ A comprehensive full-stack web application for managing equipment maintenance, i
 
 ## 📋 Overview
 
-**Logistics Maintenance Management System** is a production-ready web application designed to streamline maintenance operations, equipment tracking, and inventory management for logistics and warehouse facilities. It provides real-time dashboards, equipment health monitoring, and automated requisition workflows to minimize downtime and optimize resource allocation.
+**FleetPro** is a production-ready web application designed to streamline maintenance operations, equipment tracking, and inventory management for logistics and warehouse facilities. It provides real-time dashboards, equipment health monitoring, and automated requisition workflows to minimize downtime and optimize resource allocation.
 
 ### Key Features
 

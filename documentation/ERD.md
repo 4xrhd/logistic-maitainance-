@@ -1,7 +1,7 @@
 # Entity Relationship Diagram (ERD)
-## for FleetCore: Logistics Maintenance Management System
+## for FleetPro: Logistics Maintenance Management System
 
-This document details the database architecture of FleetCore. The system utilizes SQLite with Prisma ORM, implementing 5 primary models designed for high-integrity logistics operations.
+This document details the database architecture of FleetPro. The system utilizes SQLite with Prisma ORM, implementing 5 primary models designed for high-integrity logistics operations.
 
 ## Database Schema Model
 

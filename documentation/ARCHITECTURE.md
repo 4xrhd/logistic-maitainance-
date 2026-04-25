@@ -1,6 +1,6 @@
-# System Architecture: FleetCore
+# System Architecture: FleetPro
 
-FleetCore follows a high-performance 3-tier decoupling strategy designed for modularity, enterprise-grade scalability, and intuitive deployment.
+FleetPro follows a high-performance 3-tier decoupling strategy designed for modularity, enterprise-grade scalability, and intuitive deployment.
 
 ## High-Level Architecture
 
@@ -37,7 +37,7 @@ graph TD
 
 ### 1. Presentation Tier (React SPA)
 - **Vite 6**: Utilizing next-gen build optimization for sub-second hot module replacement.
-- **Tailwind CSS 4**: A utility-first design system defining the "FleetCore" premium aesthetic.
+- **Tailwind CSS 4**: A utility-first design system defining the "FleetPro" premium aesthetic.
 - **Framer Motion**: Powering smooth transitions and interactive micro-animations across the dashboard.
 - **Context-Driven State**: Global `AuthContext` manages session longevity and role-based component rendering.
 

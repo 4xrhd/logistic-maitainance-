@@ -1,8 +1,8 @@
-# Logistics Maintenance Management System - Project Transformation Complete
+# FleetPro - Logistics Maintenance Management System - Project Transformation Complete
 
 ## ✅ Transformation Status: COMPLETE
 
-The Logistics Maintenance App has been successfully transformed from a **frontend-only Figma export** into a **complete full-stack Software Engineering course project**. All proposed changes have been implemented and verified.
+The FleetPro application has been successfully transformed from a **frontend-only Figma export** into a **complete full-stack Software Engineering course project**. All proposed changes have been implemented and verified.
 
 ## Original State vs Current State
 
@@ -93,8 +93,8 @@ The Logistics Maintenance App has been successfully transformed from a **fronten
 - **Requisition workflow**: Submission → Admin approval works end-to-end
 
 ### Default Login Credentials ✅
-- **Admin**: `admin@logistic.com` / `admin123`
-- **Technician**: `tech@logistic.com` / `tech123`
+- **Admin**: `admin@fleetpro.com` / `admin123`
+- **Technician**: `tech@fleetpro.com` / `tech123`
 
 ## Deployment Ready
 

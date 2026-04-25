@@ -1,16 +1,16 @@
 # Software Requirements Specification (SRS)
-## for FleetCore: Logistics Maintenance Management System
+## for FleetPro: Logistics Maintenance Management System
 
 **Version:** 3.0  
 **Date:** April 24, 2026  
-**Project Name:** FleetCore (Logistics Maintenance Management System)  
+**Project Name:** FleetPro (Logistics Maintenance Management System)  
 **Status:** Implementation Verified
 
 ---
 
 ## 1. Introduction
 ### 1.1 Purpose
-This document provides a comprehensive description of the FleetCore system, a premium full-stack web application designed for logistics warehouse operations. It details the system's functionality, constraints, interfaces, and implementation specifications.
+This document provides a comprehensive description of the FleetPro system, a premium full-stack web application designed for logistics warehouse operations. It details the system's functionality, constraints, interfaces, and implementation specifications.
 
 ### 1.2 Document Conventions
 - Standard IEEE 830 SRS template is followed throughout this document.
@@ -23,13 +23,13 @@ This document provides a comprehensive description of the FleetCore system, a pr
 **Secondary Audience:** Development team members and C-suite stakeholders.
 
 ### 1.4 Product Scope
-FleetCore is a production-ready enterprise solution that manages equipment maintenance, critical inventory tracking, and team orchestration. It features a high-fidelity dashboard with predictive health monitoring, a robust requisition workflow, and administrative user lifecycle management.
+FleetPro is a production-ready enterprise solution that manages equipment maintenance, critical inventory tracking, and team orchestration. It features a high-fidelity dashboard with predictive health monitoring, a robust requisition workflow, and administrative user lifecycle management.
 
 ---
 
 ## 2. Overall Description
 ### 2.1 Product Perspective
-FleetCore is a standalone 3-tier web application. It implements a modern technology stack (React + Express + Prisma + SQLite) with comprehensive security measures and Role-Based Access Control (RBAC).
+FleetPro is a standalone 3-tier web application. It implements a modern technology stack (React + Express + Prisma + SQLite) with comprehensive security measures and Role-Based Access Control (RBAC).
 
 ### 2.2 Product Functions
 - **User Authentication & Authorization**: Secure JWT-based login with encrypted credentials and role-specific permissions.

@@ -1,7 +1,7 @@
 # Data Flow Diagrams (DFD)
-## FleetCore: Logistics Maintenance Management System
+## FleetPro: Logistics Maintenance Management System
 
-This document illustrates the flow of data through the FleetCore system, from external entities to internal processes and data stores.
+This document illustrates the flow of data through the FleetPro system, from external entities to internal processes and data stores.
 
 ---
 
@@ -12,7 +12,7 @@ The Context Diagram shows the system as a single process and its interaction wit
 graph LR
     User([Operators: Admin/Technician])
     
-    subgraph System ["FleetCore System"]
+    subgraph System ["FleetPro System"]
         Process((Logistics & <br/>Maintenance <br/>Management))
     end
     

@@ -14,7 +14,7 @@ export function Root() {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-400 font-bold uppercase tracking-widest animate-pulse gap-3">
         <Package className="w-8 h-8 animate-bounce transition-all duration-1000" />
-        Syncing Fleet...
+        Syncing FleetPro...
       </div>
     );
   }
@@ -47,7 +47,7 @@ export function Root() {
             <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
               <Package size={22} strokeWidth={2.5} />
             </div>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">FLEET<br/><span className="text-indigo-600">CORE</span></h1>
+            <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">FLEET<br/><span className="text-indigo-600">PRO</span></h1>
           </div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Logistics & Maintenance</p>
         </div>
